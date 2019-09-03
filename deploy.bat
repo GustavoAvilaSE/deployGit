@@ -14,7 +14,7 @@ SET GIT_EMAIL=gustavo.avila@softexpert.com
 setlocal
 set ROOT_FOLDER=%~dp0repository
 cd /D %ROOT_FOLDER%
-
+SET REPLACE_FOLDER=%~dp0deploy
 SET REPO_EXIST= 0
 REM setlocal EnableDelayedExpansion
 
@@ -45,6 +45,7 @@ IF /I %REPO_EXIST% EQU 1 (
     git config --local user.email %GIT_EMAIL%
     git remote add origin  https://github.com/SoftExpertIntegrations/%GITHUB_REPOSITORY_NAME% 
     git pull origin master
+    git config --local credential.helper "store --file %~dp0/deploy/config/gitcredential"
     git add .
     git commit -m "Initial Upload from On Premise server"
     git push origin master
@@ -68,7 +69,6 @@ timeout 30
 REM *** ROUTINE TO RUN ALL Start.kjb ON THE REPOSITORY ***
 REM set ROOT_FOLDER=%~dp0repository
 cd /D %ROOT_FOLDER%
-SET REPLACE_FOLDER=%~dp0deploy
 setlocal EnableDelayedExpansion
 
 for /r "%ROOT_FOLDER%" %%x in (Start.kjb) do (
