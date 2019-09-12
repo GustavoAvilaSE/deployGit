@@ -15,28 +15,26 @@ setlocal
 set ROOT_FOLDER=%~dp0
 cd /D %ROOT_FOLDER%
 
-set kjb_linea=1
-set ktr_linea=1 
+set /a jobs_to_register=0
+set /a kjb_linea=1
 set value="<job_configuration>"
-for /f "delims=" %%i IN (%value%) DO SET open=%%i
+for /f "delims=" %%i IN (%value%) DO SET openJ=%%i
 set value2= "<job_execution_configuration> <log_level>BASIC</log_level> <safe_mode>N</safe_mode> </job_execution_configuration> </job_configuration>"
-for /f "delims=" %%i in (%value2%) DO SET close=%%i
+for /f "delims=" %%i in (%value2%) DO SET closeJ=%%i
 
-REM set LOG_FILE=%~dp0/logs/deploy.log
-REM start "starting up carte" Carte.bat 127.0.0.1 8080 
-REM timeout 30 
-
-REM *** ROUTINE TO RUN ALL Start.kjb ON THE REPOSITORY ***
-REM set ROOT_FOLDER=%~dp0repository
+set /a trans_to_register=0
+set /a ktr_linea=1 
+set value="<transformation_configuration>"
+for /f "delims=" %%i IN (%value%) DO SET openT=%%i
+set value2= "<transformation_execution_configuration> <log_level>BASIC</log_level> <safe_mode>N</safe_mode> </transformation_execution_configuration> </transformation_configuration>"
+for /f "delims=" %%i in (%value2%) DO SET closeT=%%i
 
 setlocal EnableDelayedExpansion
-
-REM set kjb_linea=1
-
-REM curl -H 'Accept:application/vnd.github.v3.raw' -L https://raw.github.com/SoftExpertIntegrations/OnPremise-Config/master/client1.deploy --output client1.deploy
-REM for /f %%x in (client1.deploy) do (
-REM        curl -H 'Accept:application/vnd.github.v3.raw' --remote-name -L %%x 
-REM )
+rem /*** OBTER INFORMACAO DE CONFIGURACAO DO REPOSTIORIO ***/
+curl -H 'Accept:application/vnd.github.v3.raw' -L https://raw.github.com/SoftExpertIntegrations/OnPremise-Config/master/client1.deploy --output client1.deploy
+for /f %%x in (client1.deploy) do (
+    curl -H 'Accept:application/vnd.github.v3.raw' --remote-name -L %%x 
+)
 
 
 for /r "%ROOT_FOLDER%" %%x in (*) do (
@@ -45,27 +43,43 @@ for /r "%ROOT_FOLDER%" %%x in (*) do (
     if errorlevel 1 (     
                     
         if "%%~xx" == ".kjb" (          
+             set /a jobs_to_register=%jobs_to_register%+1
+             rem echo  !jobs_to_register!
+             for /f "delims=·" %%a in (%%x) do (
             
-            for /f "delims=·" %%a in (%%x) do (
-            
-                echo %%a
-                if /I !kjb_linea! EQU 1 (echo !open! )
-                set  /a kjb_linea=!kjb_linea!+1
-                rem echo !kjb_linea!
+                echo %%a >> !ROOT_FODER!job%jobs_to_register%.xml
+                rem echo %%a 
+                if /I !kjb_linea! EQU 1 (echo !openJ! >> !ROOT_FODER!job%jobs_to_register%.xml)
+                rem  if /I !kjb_linea! EQU 1 (echo !openJ!)
+                 set  /a kjb_linea=!kjb_linea!+1
+                 rem echo !kjb_linea!
             ) 
-            echo !close! 
+            echo !closeJ! >> !ROOT_FODER!job%jobs_to_register%.xml
+            rem /*** REGISTRO DO JOB NO CARTE SERVER ***/ *********************SACAR HACER DESPUÉS DEL RECORRIDO ************************
+            curl -X POST -H "Content-Type: application/json"  -u cluster:cluster -d @job0.xml http://192.168.56.1:8088/kettle/registerJob/?xml=Y >> autoDeployJobs.log
         )
      
-         if "%%~xx" == ".ktr" (            
+         if "%%~xx" == ".ktr" (    
+            set /a trans_to_register=%trans_to_register%+1
+            rem echo !trans_to_register!
             for /f "delims=·" %%a in (%%x) do (
-
-                REM echo %%a
+              
+                echo %%a >> !ROOT_FODER!trans%trans_to_register%.xml
+                rem echo %%a 
+                if /I !ktr_linea! EQU 1 (echo !openT! >> !ROOT_FODER!trans%trans_to_register%.xml)
+                rem if /I !ktr_linea! EQU 1 (echo !openT! )
+                set   /a ktr_linea=!ktr_linea!+1    
+                rem echo !kjb_linea!
             ) 
-            REM echo %ktr_linea% 
+            echo !closeT! >> !ROOT_FODER!trans%trans_to_register%.xml
+            rem /*** REGISTRO DO TRNASFORMATION NO CARTE SERVER ***/ *********************SACAR HACER DESPUÉS DEL RECORRIDO ************************
+            curl -X POST -H "Content-Type: application/json"  -u cluster:cluster -d @trans0.xml http://192.168.56.1:8088/kettle/registerTrans/?xml=Y  >> autoDeployTrans.log
         )
    )
 
 )
+
+
 
 REM call %REPLACE_FOLDER%\replace "\" "/" %REPLACE_FOLDER%\tmpRoutes.txt
 
