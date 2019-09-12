@@ -56,7 +56,8 @@ for /r "%ROOT_FOLDER%" %%x in (*) do (
             ) 
             echo !closeJ! >> !ROOT_FODER!job%jobs_to_register%.xml
             rem /*** REGISTRO DO JOB NO CARTE SERVER ***/ *********************SACAR HACER DESPUÉS DEL RECORRIDO ************************
-            curl -X POST -H "Content-Type: application/json"  -u cluster:cluster -d @job0.xml http://192.168.56.1:8088/kettle/registerJob/?xml=Y >> autoDeployJobs.log
+            rem curl -X POST -H "Content-Type: application/json"  -u cluster:cluster -d @job0.xml http://192.168.56.1:8088/kettle/registerJob/?xml=Y >> autoDeployJobs.log
+            curl -X POST -H "Content-Type: application/json"  -u cluster:cluster -d @job0.xml http://127.0.0.1:8080/kettle/registerJob/?xml=Y >> autoDeployJobs.log
         )
      
          if "%%~xx" == ".ktr" (    
@@ -73,7 +74,8 @@ for /r "%ROOT_FOLDER%" %%x in (*) do (
             ) 
             echo !closeT! >> !ROOT_FODER!trans%trans_to_register%.xml
             rem /*** REGISTRO DO TRNASFORMATION NO CARTE SERVER ***/ *********************SACAR HACER DESPUÉS DEL RECORRIDO ************************
-            curl -X POST -H "Content-Type: application/json"  -u cluster:cluster -d @trans0.xml http://192.168.56.1:8088/kettle/registerTrans/?xml=Y  >> autoDeployTrans.log
+            rem curl -X POST -H "Content-Type: application/json"  -u cluster:cluster -d @trans0.xml http://192.168.56.1:8088/kettle/registerTrans/?xml=Y  >> autoDeployTrans.log
+            curl -X POST -H "Content-Type: application/json"  -u cluster:cluster -d @trans0.xml http://127.0.0.1:8080/kettle/registerTrans/?xml=Y  >> autoDeployTrans.log
         )
    )
 
