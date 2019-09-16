@@ -1,2 +1,0 @@
-curl -X POST -H Content-Type: application/json -u cluster:cluster -d @startSAP.kjb.xml http://10.0.2.15:8080/kettle/registerJob/?xml=Y
-curl -X POST -H Content-Type: application/json -u cluster:cluster http://10.0.2.15:8080/kettle/startJob/?name=startSAP
