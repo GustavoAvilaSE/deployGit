@@ -31,7 +31,7 @@ for /f "delims=" %%i in (%value2%) DO SET closeT=%%i
 
 setlocal EnableDelayedExpansion
 rem /*** OBTER INFORMACAO DE CONFIGURACAO DO REPOSTIORIO ***/
-curl -H 'Accept:application/vnd.github.v3.raw' -L https://raw.github.com/SoftExpertIntegrations/OnPremise-Config/master/client1.deploy --output client1.deploy
+curl -H "Accept:application/vnd.github.v3.raw" -L https://raw.github.com/SoftExpertIntegrations/OnPremise-Config/master/client1.deploy --output client1.deploy
 for /f %%x in (client1.deploy) do (
     curl -H 'Accept:application/vnd.github.v3.raw' --remote-name -L %%x 
 )
@@ -44,38 +44,44 @@ for /r "%ROOT_FOLDER%" %%x in (*) do (
                     
         if "%%~xx" == ".kjb" (          
              set /a jobs_to_register=%jobs_to_register%+1
-             rem echo  !jobs_to_register!
+             echo  !jobs_to_register!
              for /f "delims=·" %%a in (%%x) do (
             
-                echo %%a >> !ROOT_FODER!job%jobs_to_register%.xml
+                rem echo %%a >> !ROOT_FODER!job%jobs_to_register%.xml
+                echo %%a >> !ROOT_FODER!job.xml
                 rem echo %%a 
-                if /I !kjb_linea! EQU 1 (echo !openJ! >> !ROOT_FODER!job%jobs_to_register%.xml)
+                if /I !kjb_linea! EQU 1 (echo !openJ! >> !ROOT_FODER!job.xml)
                 rem  if /I !kjb_linea! EQU 1 (echo !openJ!)
                  set  /a kjb_linea=!kjb_linea!+1
                  rem echo !kjb_linea!
             ) 
-            echo !closeJ! >> !ROOT_FODER!job%jobs_to_register%.xml
+            rem echo !closeJ! >> !ROOT_FODER!job%jobs_to_register%.xml
+            echo !closeJ! >> !ROOT_FODER!job.xml
             rem /*** REGISTRO DO JOB NO CARTE SERVER ***/ *********************SACAR HACER DESPUÉS DEL RECORRIDO ************************
-            rem curl -X POST -H "Content-Type: application/json"  -u cluster:cluster -d @job0.xml http://192.168.56.1:8088/kettle/registerJob/?xml=Y >> autoDeployJobs.log
-            curl -X POST -H "Content-Type: application/json"  -u cluster:cluster -d @job0.xml http://127.0.0.1:8080/kettle/registerJob/?xml=Y >> autoDeployJobs.log
+            rem curl -X POST -H "Content-Type: application/json"  -u cluster:cluster -d @job.xml http://192.168.56.1:8088/kettle/registerJob/?xml=Y >> autoDeployJobs.log
+            rem curl -X POST -H "Content-Type: application/json"  -u cluster:cluster -d @job%jobs_to_register%.xml http://127.0.0.1:8080/kettle/registerJob/?xml=Y >> autoDeployJobs.log
+            rem del !ROOT_FODER!job.xml
         )
      
-         if "%%~xx" == ".ktr" (    
-            set /a trans_to_register=%trans_to_register%+1
-            rem echo !trans_to_register!
+        if "%%~xx" == ".ktr" (    
+            set /a trans_to_register=!trans_to_register!+1
+            echo !trans_to_register!
             for /f "delims=·" %%a in (%%x) do (
               
-                echo %%a >> !ROOT_FODER!trans%trans_to_register%.xml
+                rem echo %%a >> !ROOT_FODER!trans%trans_to_register%.xml
+                echo %%a >> !ROOT_FODER!trans.xml
                 rem echo %%a 
-                if /I !ktr_linea! EQU 1 (echo !openT! >> !ROOT_FODER!trans%trans_to_register%.xml)
+                if /I !ktr_linea! EQU 1 (echo !openT! >> !ROOT_FODER!trans.xml)
                 rem if /I !ktr_linea! EQU 1 (echo !openT! )
                 set   /a ktr_linea=!ktr_linea!+1    
                 rem echo !kjb_linea!
             ) 
-            echo !closeT! >> !ROOT_FODER!trans%trans_to_register%.xml
+            rem echo !closeT! >> !ROOT_FODER!trans%trans_to_register%.xml
+            echo !closeT! >> !ROOT_FODER!trans.xml
             rem /*** REGISTRO DO TRNASFORMATION NO CARTE SERVER ***/ *********************SACAR HACER DESPUÉS DEL RECORRIDO ************************
-            rem curl -X POST -H "Content-Type: application/json"  -u cluster:cluster -d @trans0.xml http://192.168.56.1:8088/kettle/registerTrans/?xml=Y  >> autoDeployTrans.log
-            curl -X POST -H "Content-Type: application/json"  -u cluster:cluster -d @trans0.xml http://127.0.0.1:8080/kettle/registerTrans/?xml=Y  >> autoDeployTrans.log
+            rem curl -X POST -H "Content-Type: application/json"  -u cluster:cluster -d @trans.xml http://192.168.56.1:8088/kettle/registerTrans/?xml=Y  >> autoDeployTrans.log
+            rem curl -X POST -H "Content-Type: application/json"  -u cluster:cluster -d @trans%trans_to_register%.xml http://127.0.0.1:8080/kettle/registerTrans/?xml=Y  >> autoDeployTrans.log
+            rem del !ROOT_FODER!trans.xml
         )
    )
 
