@@ -33,7 +33,8 @@ do
 			</transformation_execution_configuration> 
 			</transformation_configuration>" >> $i.xml
 
-			curl -X POST -H "Content-Type: application/x-www-form-urlencoded"  -u $USER:$PWD -d @$i.xml http://$DEPLOY_ADDRESS:$DEPLOY_PORT/kettle/registerTrans/?xml=Y  >> autoDeployTrans.log
+			#curl -X POST -H "Content-Type: application/x-www-form-urlencoded"  -u $USER:$PWD -d @$i.xml http://$DEPLOY_ADDRESS:$DEPLOY_PORT/kettle/registerTrans/?xml=Y  >> autoDeployTrans.log
+			curl -X POST -H "Content-Type: application/json"  -u $USER:$PWD -d @$i.xml http://$DEPLOY_ADDRESS:$DEPLOY_PORT/kettle/registerTrans/?xml=Y  >> autoDeployTrans.log
 			#sleep 5
 			#echo basename -s .ktr "$i" >
 			#echo "$i" | cut -f 1 -d '.'
@@ -50,7 +51,7 @@ do
 			</job_execution_configuration> 
 			</job_configuration>" >> $i.xml
 
-			#echo curl -X POST -H "Content-Type: application/json"  -u $USER:$PWD -d @$i.xml http://$DEPLOY_ADDRESS:$DEPLOY_PORT/kettle/registerJob/?xml=Y >> autoDeployJobs.log				
+			curl -X POST -H "Content-Type: application/json"  -u $USER:$PWD -d @$i.xml http://$DEPLOY_ADDRESS:$DEPLOY_PORT/kettle/registerJob/?xml=Y >> autoDeployJobs.log				
 			;;
 	esac
 done
@@ -61,13 +62,15 @@ while read i; do
 			file_name="${i##*/}"
 			TRANS_NAME="${file_name%.*}"
 			#echo curl -X POST -H "Content-Type: application/x-www-form-urlencoded"  -u $USER:$PWD http://$DEPLOY_ADDRESS:$DEPLOY_PORT/kettle/prepareExec/?name=$TRANS_NAME >> autoDeployTrans.log
-			#sleep 5
+			curl -X POST -H "Content-Type: application/json"  -u $USER:$PWD http://$DEPLOY_ADDRESS:$DEPLOY_PORT/kettle/prepareExec/?name=$TRANS_NAME >> autoDeployTrans.log
+			sleep 2
 			#echo curl -X POST -H "Content-Type: application/x-www-form-urlencoded"  -u $USER:$PWD http://$DEPLOY_ADDRESS:$DEPLOY_PORT/kettle/startExec/?name=$TRANS_NAME  >> autoDeployTrans.log
+			curl -X POST -H "Content-Type: application/json"  -u $USER:$PWD http://$DEPLOY_ADDRESS:$DEPLOY_PORT/kettle/startExec/?name=$TRANS_NAME  >> autoDeployTrans.log
 			;;
 		*.kjb)
 			file_name="${i##*/}"
 			JOB_NAME="${file_name%.*}"			
-			#echo curl -X POST -H "Content-Type: application/json"  -u $USER:$PWD http://$DEPLOY_ADDRESS:$DEPLOY_PORT/kettle/startJob/?name=$JOB_NAME >> autoDeployJobs.log	
+			curl -X POST -H "Content-Type: application/json"  -u $USER:$PWD http://$DEPLOY_ADDRESS:$DEPLOY_PORT/kettle/startJob/?name=$JOB_NAME >> autoDeployJobs.log	
 			;;
 	esac
 done < $CONFIG_FILE
