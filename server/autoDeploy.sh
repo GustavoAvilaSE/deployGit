@@ -7,7 +7,7 @@
 # *******************************************************************************************
 
 #/*** INSTANCIAR VAIRAVEIS DE AMBIENTE ***/
-WORK_FOLDER=/opt/pentaho/data-integration/autoDeploy
+WORK_FOLDER=/opt/pentaho/data-integration
 DEPLOY_ADDRESS=10.0.2.15
 DEPLOY_PORT=8080
 USER=cluster
@@ -29,24 +29,24 @@ for i in $(ls -C1)
 do	
 	case $i in
 		*.ktr)
-			cp $i  $i.xml
+			cp $i  $i.xml #/*** CRIAR ARQUIVOS TEMPORARIOS PARA A IMPLEMENTAÇÃO
 			printf '%s\n' 1a '<transformation_configuration>' . x | ex $i.xml
 			echo "<transformation_execution_configuration> 
 			<log_level>BASIC</log_level> 
 			<safe_mode>N</safe_mode> 
 			</transformation_execution_configuration> 
 			</transformation_configuration>" >> $i.xml
-			echo curl -X POST -H "Content-Type: application/json"  -u $USER:$PASS -d @$i.xml http://$DEPLOY_ADDRESS:$DEPLOY_PORT/kettle/registerTrans/?xml=Y  >> $WORK_FOLDER/log/autoDeployTrans.log
+			curl -X POST -H "Content-Type: application/json"  -u $USER:$PASS -d @$i.xml http://$DEPLOY_ADDRESS:$DEPLOY_PORT/kettle/registerTrans/?xml=Y  >> $WORK_FOLDER/autoDeploy/log/autoDeployTrans.log
 			;;
 		*.kjb)
-			cp $i  $i.xml
+			cp $i  $i.xml #/*** CRIAR ARQUIVOS TEMPORARIOS PARA A IMPLEMENTAÇÃO
 			printf '%s\n' 1a '<job_configuration>' . x | ex $i.xml
 			echo "<job_execution_configuration>
 			<log_level>BASIC</log_level> 
 			<safe_mode>N</safe_mode> 
 			</job_execution_configuration> 
 			</job_configuration>" >> $i.xml
-			echo curl -X POST -H "Content-Type: application/json"  -u $USER:$PASS -d @$i.xml http://$DEPLOY_ADDRESS:$DEPLOY_PORT/kettle/registerJob/?xml=Y >> $WORK_FOLDER/log/autoDeployJobs.log				
+			curl -X POST -H "Content-Type: application/json"  -u $USER:$PASS -d @$i.xml http://$DEPLOY_ADDRESS:$DEPLOY_PORT/kettle/registerJob/?xml=Y >> $WORK_FOLDER/autoDeploy/log/autoDeployJobs.log				
 			;;
 	esac
 done
@@ -57,23 +57,23 @@ for i in $(ls -C1)
 do
 	echo $i
 	file_name="${i##*/}"
-	tmp=`sed -n 's/<name>\(.*\)<\/name>/\1/p' $file_name | head -1`	# /*** Linha para obter o nome do Job/Transformation ***/
-	NAME=`echo $tmp | sed 's/ *$//g'` #/*** Linha pra apagar os espacos vacios ***/
+	tmp=`sed -n 's/<name>\(.*\)<\/name>/\1/p' $file_name | head -1`	# /*** obter o nome do Job/Transformation ***/
+	NAME=`echo $tmp | sed 's/ *$//g'` #/*** Apagar os espacos vacios ***/
 	case $i in
 		*.ktr)
-			echo curl -X POST -H "Content-Type: application/json"  -u $USER:$PASS http://$DEPLOY_ADDRESS:$DEPLOY_PORT/kettle/prepareExec/?name=$NAME >>  $WORK_FOLDER/log/autoDeployTrans.log	
-			#sleep 1
-			echo url -X POST -H "Content-Type: application/json"  -u $USER:$PASS http://$DEPLOY_ADDRESS:$DEPLOY_PORT/kettle/startExec/?name=$NAME  >>  $WORK_FOLDER/log/autoDeployTrans.log
+			curl -X POST -H "Content-Type: application/json"  -u $USER:$PASS http://$DEPLOY_ADDRESS:$DEPLOY_PORT/kettle/prepareExec/?name=$NAME >>  $WORK_FOLDER/autoDeploy/log/autoDeployTrans.log	
+			sleep 1
+			url -X POST -H "Content-Type: application/json"  -u $USER:$PASS http://$DEPLOY_ADDRESS:$DEPLOY_PORT/kettle/startExec/?name=$NAME  >>  $WORK_FOLDER/autoDeploy/log/autoDeployTrans.log
 			;;
 		*.kjb)
-			echo curl -X POST -H "Content-Type: application/json"  -u $USER:$PASS http://$DEPLOY_ADDRESS:$DEPLOY_PORT/kettle/startJob/?name=$NAME >>  $WORK_FOLDER/log/autoDeployJobs.log	
+			curl -X POST -H "Content-Type: application/json"  -u $USER:$PASS http://$DEPLOY_ADDRESS:$DEPLOY_PORT/kettle/startJob/?name=$NAME >>  $WORK_FOLDER/autoDeploy/log/autoDeployJobs.log	
 			;;
 	esac
 #done < $CONFIG_FILE
 done
 
 #/*** EXCLUIR ARQUIVOS TEMPORARIOS ***/
-#find . -name "*.xml" -type f -delete
+find . -name "*.xml" -type f -delete
 #find . -name "*.ktr" -type f -delete
 #find . -name "*.kjb" -type f -delete	
 #rm -f $CONFIG_FILE
