@@ -39,6 +39,7 @@ IF /I %REPO_EXIST% EQU 1 (
     git remote add origin https://github.com/GustavoAvilaSE/testRepo
     git pull origin master
     REM git config --local credential.helper "store --file %~dp0/deploy/config/gitcredential"
+    git config --local credential.helper 
     git add .
     git commit -m "Initial Upload from Consultor Workstation"
     git push origin master
