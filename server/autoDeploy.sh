@@ -6,14 +6,17 @@
 # Copyright 2019 -  All rights reserved.
 # *******************************************************************************************
 
+#/*** DELAY PARA ESPERAR O INICO DO SERVICO CARTE ***/
+sleep 90s
 #/*** INSTANCIAR VAIRAVEIS DE AMBIENTE ***/
-WORK_FOLDER=/opt/pentaho/data-integration/autoDeploy
+WORK_FOLDER=/opt/pentaho/data-integration/server
 DEPLOY_ADDRESS=10.0.2.15
 DEPLOY_PORT=8080
 USER=cluster
 PASS=cluster
-#CONFIG_FILE=client1.deploy
 
+#/********************* IMPLEMENTACAO DIREITA DESDE O REPOSITORIO ***************************/
+#CONFIG_FILE=client1.deploy
 # /*** OBTER LISTA DE ITENS A SEREM IMPLANTADOS ***/
 #curl -H "Accept:application/vnd.github.v3.raw" -L https://raw.github.com/SoftExpertIntegrations/OnPremise-Config/master/$CONFIG_FILE --output $WORK_FOLDER/$CONFIG_FILE
 
@@ -21,6 +24,7 @@ PASS=cluster
 #while read p; do
 #    curl -H 'Accept:application/vnd.github.v3.raw' --remote-name -L $p
 #done < $CONFIG_FILE
+#/******************************************************************************************/
 
 #/*** REGISTRAR JOBS E TRANSFORMATIONS NO SERVIDOR CARTE ***/
 cd $WORK_FOLDER/sources
@@ -54,7 +58,6 @@ done
 #/*** INICIAR  JOBS E TRANSFORMATIONS NO SERVIDOR CARTE ***/
 for i in $(ls -C1)  
 do
-	echo $i
 	file_name="${i##*/}"
 	tmp=`sed -n 's/<name>\(.*\)<\/name>/\1/p' $file_name | head -1`	# /*** obter o nome do Job/Transformation ***/
 	NAME=`echo $tmp | sed 's/ *$//g'` #/*** Apagar os espacos vacios ***/
